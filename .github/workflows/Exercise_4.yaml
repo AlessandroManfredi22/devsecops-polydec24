@@ -1,4 +1,4 @@
-name: Static Application Security Testing (SAST)
+name: Build, Test, and Execute SCA Workflow
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  sast:
+  build-test-sca:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,27 +21,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        
+      - name: Bearer SAST
+        uses: bearer/bearer-action@v2
+      
 
-      - name: Prepare code for SAST
-        run: tar -czf source-code.tar.gz .
+      - name: Build the application
+        run: npm run build
 
-      - name: Run SAST using Bearer token
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.BEARER_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data-binary @source-code.tar.gz \
-            https://sast.example.com/api/analyze \
-            -o sast-results.json
+      - name: Run tests
+        run: npm test
 
-      - name: Review SAST results
-        run: cat sast-results.json
-
-      - name: Fix vulnerabilities
-        if: contains(fromJson(steps.sast-results.outputs.vulnerabilities), 'high')
-        run: |
-          echo "Fix high-severity vulnerabilities"
-          # Add commands to fix vulnerabilities here
-
-      - name: Mark workflow as successful
-        run: echo "SAST completed successfully!"
+  

@@ -16,17 +16,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Create hello_world.txt
-        run: echo "Hello, World!" > hello_world.txt
-
-      - name: Check if hello_world.txt exists
-        run: |
-          if [ ! -f hello_world.txt ]; then
-            echo "hello_world.txt not found!" && exit 1
-          fi
-
       - name: Echo the content of hello_world.txt
         run: cat hello_world.txt
-
-      - name: Exit with PASS
-        run: echo "PASS"

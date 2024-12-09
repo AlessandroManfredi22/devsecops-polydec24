@@ -18,7 +18,7 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
-      
+
       - name: Install Dependencies
         run: npm install
 
@@ -26,10 +26,23 @@ jobs:
         run: npm install -g @bearer/cli
 
       - name: Run Bearer SAST Analysis
-        run: bearer scan --output json --output-file bearer_report.json
+        run: bearer scan --output json --output-file bearer_report.json || echo "Bearer scan failed"
 
-      - name: Show Bearer SAST Results
-        run: cat bearer_report.json
+      - name: Check if Report Exists
+        run: |
+          if [ -f "bearer_report.json" ]; then
+            echo "Report generated!"
+          else
+            echo "No report generated."
+          fi
+
+      - name: Show Report Content (If Available)
+        run: |
+          if [ -f "bearer_report.json" ]; then
+            cat bearer_report.json
+          else
+            echo "No report to show."
+          fi
 
       - name: Fail if Vulnerabilities Found
         run: |

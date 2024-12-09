@@ -1,4 +1,4 @@
-name: Build, Test, and SAST Analysis
+name: Build, Test, and SAST Analysis with Bearer
 
 on:
   push:
@@ -16,19 +16,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+      
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Install Bandit
-        run: pip install bandit
+      - name: Install Bearer SAST Tool
+        run: npm install -g @bearer/cli
 
-      - name: Run SAST (Bandit)
-        run: bandit -r . -f json -o bandit_report.json || true
+      - name: Run Bearer SAST Analysis
+        run: bearer scan --output json --output-file bearer_report.json
 
-      - name: Show Bandit Results
-        run: cat bandit_report.json
+      - name: Show Bearer SAST Results
+        run: cat bearer_report.json
 
-      - name: Fix Vulnerabilities
-        if: always()
+      - name: Fail if Vulnerabilities Found
         run: |
-          echo "Fix vulnerabilities manually based on Bandit findings."
+          count=$(jq '.issues | length' bearer_report.json)
+          if [ "$count" -gt "0" ]; then
+            echo "Bearer found $count issues. Please fix them."
+            exit 1
+          else
+            echo "No vulnerabilities found."
+          fi

@@ -1,4 +1,4 @@
-name: Build, Test, and Execute SCA Workflow
+name: Execute a SAST
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build-test-sca:
+  build-test-sast:
     runs-on: ubuntu-latest
 
     steps:

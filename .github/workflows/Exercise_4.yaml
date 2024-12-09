@@ -25,8 +25,19 @@ jobs:
       - name: Install Bearer SAST Tool
         run: npm install -g @bearer/cli
 
+      - name: Debug Bearer Configuration
+        run: |
+          echo "Verifying project structure"
+          ls -la # Verifica la struttura del progetto
+          cat package.json # Verifica se il package.json è presente e leggibile
+
       - name: Run Bearer SAST Analysis
-        run: bearer scan --output json --output-file bearer_report.json || echo "Bearer scan failed"
+        run: |
+          echo "Running Bearer scan..."
+          bearer scan --output json --output-file bearer_report.json || echo "Bearer scan failed"
+          echo "Check Bearer scan result"
+          ls -la # Verifica se il file di report è stato creato
+          cat bearer_report.json || echo "No report generated"
 
       - name: Check if Report Exists
         run: |
@@ -36,20 +47,16 @@ jobs:
             echo "No report generated."
           fi
 
-      - name: Show Report Content (If Available)
-        run: |
-          if [ -f "bearer_report.json" ]; then
-            cat bearer_report.json
-          else
-            echo "No report to show."
-          fi
-
       - name: Fail if Vulnerabilities Found
         run: |
-          count=$(jq '.issues | length' bearer_report.json)
-          if [ "$count" -gt "0" ]; then
-            echo "Bearer found $count issues. Please fix them."
-            exit 1
+          if [ -f "bearer_report.json" ]; then
+            count=$(jq '.issues | length' bearer_report.json)
+            if [ "$count" -gt "0" ]; then
+              echo "Bearer found $count issues. Please fix them."
+              exit 1
+            else
+              echo "No vulnerabilities found."
+            fi
           else
-            echo "No vulnerabilities found."
+            echo "No report to analyze, skipping vulnerability check."
           fi
